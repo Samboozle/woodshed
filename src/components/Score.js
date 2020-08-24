@@ -2,12 +2,12 @@ import React from 'react';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 
-import renderScore from '../music-logic/renderScore'
+import { renderScore } from '../music-logic';
 
 class Score extends React.Component {
 
   componentDidMount() {
-    renderScore(this.props.currentNoodle, 500, 500);
+    renderScore(this.props.currentNoodle, window.innerWidth, window.innerHeight);
   }
 
   componentDidUpdate(prevProps, _prevState) {
@@ -17,7 +17,7 @@ class Score extends React.Component {
   }
 
   render() {
-    return <div id="score" className="flex justify-center" />;
+    return <div id="score" className="flex" />;
   }
 
 }
