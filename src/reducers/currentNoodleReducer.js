@@ -1,5 +1,5 @@
-import { theLick } from '../passages';
+import { theLickNew } from '../passages/theLickNew';
 
 export default _ => {
-  return theLick;
+  return theLickNew;
 }
