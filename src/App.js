@@ -1,12 +1,14 @@
 import React from 'react';
-// import Toolbar from './components/Toolbar';
+// import { BrowswerRouter as Router } from 'react-router-dom';
+
 import { Navbar, Score } from './components';
+import { NoodleShow } from './pages';
 
 const App = _ => {
   return(
     <>
       <Navbar />
-      <Score />
+      <NoodleShow />
     </>
   );
 }

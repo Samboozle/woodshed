@@ -1,6 +1,6 @@
 import Vex from 'vexflow';
 import _ from 'lodash';
-import theKeys from './theKeys';
+import theKeys from '../music-logic/theKeys';
 
 const { Accidental, Beam, Formatter, Renderer, Stave, StaveNote, Voice } = Vex.Flow;
 
@@ -25,9 +25,15 @@ export default (noodle, windowWidth, windowHeight) => {
   //
   measures.forEach((m, i) => {
     let { beats, keySig, timeSig, clefChange, keyChange, timeChange } = m;
+
+    let beatValue = +_.last(timeSig.split("/"));
+
+    
+    console.log(_.maxBy(m.voices, voice => voice.length).length * 80)
+
     let width = Math.min(
       Math.ceil(beats) * 50,
-      m.notes.length * 80
+      _.maxBy(m.voices, voice => voice.length ).length * 80
     );
 
     if (width + x > canvasWidth) {
@@ -58,11 +64,31 @@ export default (noodle, windowWidth, windowHeight) => {
 
       stave.setContext(context).draw();
 
-      let notes = renderNotes(m.notes, keySig);
-      let beams = Beam.generateBeams(notes);
+      let voices = m.voices.map(voice => {
+        let notes = renderNotes(voice, keySig);
+        // let beams = Beam.generateBeams(notes);
+        
+        // Formatter.FormatAndDraw(context, stave, notes);
+        // beams.forEach(beam => { beam.setContext(context).draw(); });
+
+        return new Voice({num_beats: beats, beat_value: beatValue})
+          .addTickables(notes);
+      })
+
+      // voiceNotes.forEach(notes => {
+      //   let beams = Beam.generateBeams(notes);
+      //   Formatter.FormatAndDraw(context, stave, notes);
+      // })
+
+
+      formatter.joinVoices(voices).format(voices, width - 80);
+      Formatter.FormatAndDraw(context, stave, voices);
+      // voices.forEach(voice => { voice.draw(context, stave) });
+
+
+      // let notes = renderNotes(m.notes, keySig);
+      // let beams = Beam.generateBeams(notes);
   
-      Formatter.FormatAndDraw(context, stave, notes);
-      beams.forEach(beam => { beam.setContext(context).draw(); });
     }
 
     x += width;

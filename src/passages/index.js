@@ -1,5 +1,5 @@
-import theLickNew from './theLickNew';
+import theLick from './theLick';
 
 export {
-  theLickNew
+  theLick,
 }

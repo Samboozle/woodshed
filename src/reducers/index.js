@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux';
-import currentNoodleReducer from './currentNoodleReducer';
+import selectedNoodleReducer from './selectedNoodleReducer';
 
 export default combineReducers({
-  currentNoodle: currentNoodleReducer,
+  selectedNoodle: selectedNoodleReducer,
 });

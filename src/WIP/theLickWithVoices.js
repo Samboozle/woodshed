@@ -28,7 +28,10 @@ export default {
         { clef: "treble", keys: ["d/5"], duration: "8", modifiers: [] },
       ],
       [
-      
+        { clef: "treble", keys: ["d/4"], duration: "q", modifiers: [] },
+        { clef: "treble", keys: ["e/4"], duration: "q", modifiers: [] },
+        { clef: "treble", keys: ["f/4"], duration: "qd", modifiers: [] },
+        { clef: "treble", keys: ["g/4"], duration: "8", modifiers: [] },
       ]
     ]
     },
@@ -38,21 +41,11 @@ export default {
       timeSig: "4/4",
       keySig: "Dm",
       voices: [[
-        { clef: "treble", keys: ["d/5"], duration: "w", modifiers: [] }
+        { clef: "treble", keys: ["bb/4"], duration: "w", modifiers: [] }
       ]]
     }
   ],
-  get clefs() {
-    let cs = [];
-    this.measures.forEach(m => {
-      m.notes.forEach(n => {
-        if (!cs.includes(n.clef)) {
-          cs.push(n.clef);
-        }
-      })
-    });
-    return cs;
-  },
+  clefs: ["treble"],
   // get ties() {
   //   let ties = [];
   //   let allNotes = this.measures.flatMap(measure => {
