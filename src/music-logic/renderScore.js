@@ -2,7 +2,7 @@ import Vex from 'vexflow';
 import _ from 'lodash';
 import theKeys from './theKeys';
 
-const { Accidental, Beam, Formatter, Renderer, Stave, StaveNote, Voice } = Vex.Flow;
+const { Accidental, BarNote, Beam, Formatter, Renderer, Stave, StaveNote } = Vex.Flow;
 
 export default (noodle, windowWidth, windowHeight) => {
 
@@ -14,7 +14,6 @@ export default (noodle, windowWidth, windowHeight) => {
   let renderer = new Renderer(vexDiv, Renderer.Backends.SVG);
   renderer.resize(canvasWidth, canvasHeight);
   let context = renderer.getContext();
-  let formatter = new Formatter();
 
   // rendering logic begins
   let { clefs, /* ties */ } = noodle;
@@ -24,10 +23,14 @@ export default (noodle, windowWidth, windowHeight) => {
 
   //
   measures.forEach((m, i) => {
-    let { beats, keySig, timeSig, clefChange, keyChange, timeChange } = m;
+    let { 
+      beats, keySig, timeSig, 
+      clefChange, keyChange, timeChange,
+      isPickupMeasure
+    } = m;
     let width = Math.min(
       Math.ceil(beats) * 50,
-      m.notes.length * 80
+      m.voices[0].length * 80
     );
 
     if (width + x > canvasWidth) {
@@ -44,7 +47,7 @@ export default (noodle, windowWidth, windowHeight) => {
     // max staves is 2
     if (clefs.length === 2) {
       // todo -> support two-stave stuff
-      let [one, two] = clefs;
+      // let [one, two] = clefs;
 
     } else if (clefs.length === 1) {
       let clef = clefs[0];
@@ -58,7 +61,9 @@ export default (noodle, windowWidth, windowHeight) => {
 
       stave.setContext(context).draw();
 
-      let notes = renderNotes(m.notes, keySig);
+      let notes = renderNotes(m.voices[0], keySig);
+      if (isPickupMeasure) { notes.push(new BarNote({type: "double"}))}
+
       let beams = Beam.generateBeams(notes);
   
       Formatter.FormatAndDraw(context, stave, notes);
@@ -75,8 +80,7 @@ const renderNotes = (notes, keySig) => {
     keys.forEach((key, i) => {
       let k = key.split("/")[0];
       if (isAccidental(k, keySig)) { 
-        let accid = k.slice(1);
-        console.log(accid)
+        let accid = k.slice(1) || "n";
         note.addAccidental(i, new Accidental(accid));
       }
     })

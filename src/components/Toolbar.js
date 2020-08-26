@@ -1,7 +1,6 @@
 import React from 'react';
 
-const toolbar = [
-]
+const tools = []
 
 export default (props) => {
   return(
