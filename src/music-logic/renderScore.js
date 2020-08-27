@@ -7,8 +7,7 @@ const { Accidental, BarNote, Beam, Formatter, Renderer, Stave, StaveNote } = Vex
 export default (noodle, windowWidth, windowHeight) => {
 
   // Boilerplate
-  let canvasWidth = Math.max(windowWidth * 0.75, 500);
-  let canvasHeight = Math.max(windowHeight * 0.75, 500);
+  
 
   let vexDiv = document.getElementById("score");
   let renderer = new Renderer(vexDiv, Renderer.Backends.SVG);

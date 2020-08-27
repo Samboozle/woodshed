@@ -11,11 +11,17 @@ const { Accidental, Beam, Factory, Formatter, Registry, Stave, StaveNote, System
 // to note modification impressive.
 
 export default (noodle, windowWidth, windowHeight) => {
+
+  // windowSpec
+  let canvasWidth = Math.max(windowWidth * 0.75, 500);
+  let canvasHeight = Math.max(windowHeight * 0.75, 500);
+
   // Boilerplate
   // registry allows notes to be marked with unique identifiers for later modification,
   // even across barlines
   let registry = new Registry();
   Registry.enableDefaultRegistry(registry);
+  const retrieve = id => registry.getElementById(id);
 
   // instantiate score
   let vex = new Factory({ renderer: { elementId: "score" } })
@@ -28,61 +34,91 @@ export default (noodle, windowWidth, windowHeight) => {
   let beam = score.beam.bind(score);
   let tuplet = score.tuplet.bind(score);
 
+  // prefer to give each measure x, y, and width values in reducer below
   // initialize score with first system indented, per engraving custom
-  let x = 120;
-  let y = 20;
+  // let x = 120;
+  // let y = 20;
 
   let makeSystem = width => {
-    let system = vex.System({ x: x, y: y, width: width, spaceBetweenStaves: 10 });
+    return vex.System({ x: x, y: y, width: width, spaceBetweenStaves: 10 });
   }
 
+
+
+  // todo -> write reducer that determines width and position of current measure
+  // by comparing it to density of NEXT measure;
   
-  
-  
-}
+  let measures = noodle.measures.reduce(simplifyMeasures);
+
+  let modifications = {};
 
 
-const concat = (a, b) => a.concat(b);
+  measures.forEach((measure, mNo) => {
+    let { pickup, timeSig, keySig, staves, /* x, y, width */ } = measure;
+    // let system = makeSystem(width);
 
-const renderNotes = (notes, keySig) => {
-  return notes.map(({ clef, keys, duration }) => {
-    let note = new StaveNote({ clef, keys, duration });
-    keys.forEach((key, i) => {
-      let k = key.split("/")[0];
-      if (isAccidental(k, keySig)) {
-        let accid = k.slice(1) || "n";
-        note.addAccidental(i, new Accidental(accid));
-      }
-    })
-    if (duration.endsWith("d")) { note.addDotToAll(); }
+    for (let clef in staves) {
+      let stave = staves[clef];
+      let vs = [];
 
-    return note;
+      stave.forEach((voice, vNo) => {
+        let ns = [];
+
+        voice.forEach((noteObj, nNo) => {
+          let { keys, duration, modifiers } = noteObj;
+          let note = (keys.length === 1 ? keys[0] : `(${keys.join(" ")})`) + `/${duration}`;
+          if (modifiers) { 
+            let noteId = `M${mNo}C${clef}V${vNo}N${nNo}`;
+            modifications[noteId] = modifiers;
+            note += `[id="${noteId}"]`;
+          }
+          ns.push(notes(note));
+        })
+
+        vs.push(ns.reduce(concat));
+      })
+
+      System.addStave({ voices: vs })
+
+
+
+    }
+
+    // treat voices
+
+
+
+
   })
+  
+  // this function should add an x, y, and width property to each measure
+  // as well as add markers as to whether clefs, key signatures, and time signatures should
+  // be displayed (see src/deprecated/renderScore.js for simplifyMeasures reducer)
+
+  // AS WELL AS TEMPO/TEMPO CHANGE INFORMATION
+
+  // ideally, it will also intelligently identify groups of notes to be beamed and groups of notes to be tupled
+  const simplifyMeasures = (acc, measure) => {
+    let { voices } = measure;
+    
+    if (_.isEmpty(acc)) {
+      measure.timeChange = true;
+      measure.x = 120;
+      measure.y = 20;
+
+      measure.width = Math.min(
+        Math.ceil(beats)
+        ) 
+        return [measure];
+      }
+      
+      return [...acc, measure];
+      
+    }
+    
+  const concat = (a, b) => a.concat(b);
+  const isAccidental = (pitch, key) => !theKeys[key].includes(pitch);
+  
 }
 
-// const simplifyMeasures = (acc, measure) => {
 
-//   if (acc.length === 0) {
-//     measure.timeChange = true;
-//     return [measure];
-//   }
-
-//   let lastMeasure = _.last(acc);
-
-//   if (lastMeasure.timeSig !== measure.timeSig) {
-//     measure.timeChange = true;
-//   }
-
-//   if (lastMeasure.keySig !== measure.keySig) {
-//     measure.keyChange = true;
-//   }
-
-//   if (lastMeasure.clef !== measure.clef) {
-//     measure.clefChange = true;
-//   }
-
-//   return [...acc, measure];
-
-// }
-
-const isAccidental = (pitch, key) => !theKeys[key].includes(pitch);
