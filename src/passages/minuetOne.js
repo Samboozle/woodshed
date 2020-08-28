@@ -1,5 +1,3 @@
-import Vex from 'vexflow';
-
 export default {
   measures: [
     { isPickup: false,
@@ -21,10 +19,10 @@ export default {
           ]
         ]
       },
-    //   barlines: {
-    //     left: "none",
-    //     right: "single"
-    //   }
+      barlines: {
+        left: "none",
+        right: "single"
+      }
     }
   ],
   // clefs: ["treble", "bass"]
