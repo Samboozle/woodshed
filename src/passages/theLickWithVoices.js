@@ -5,13 +5,12 @@ export default {
       beats: 0.5,
       timeSig: "4/4",
       keySig: "Dm",
-      voices: [[
-        { clef: "treble", keys: ["a/4"], duration: "8", modifiers: [] }
-      ],
-      [
-        { clef: "treble", keys: ["e/4"], duration: "8r"}
-      ]
-    ]
+      staves: {
+        "treble": [
+          [{ clef: "treble", keys: ["a/4"], duration: "8", modifiers: null }],
+          [{ clef: "treble", keys: ["c#/4"], duration: "8", modifiers: null}]
+        ]
+      }
     },
     {
       isPickupmeasure: false,

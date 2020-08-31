@@ -2,8 +2,9 @@ import Vex from 'vexflow';
 import _ from 'lodash';
 import theKeys from './theKeys';
 
-const { Accidental, Barline, Beam, Factory, Formatter, Registry, KeySignature,
-  Stave, StaveModifier, StaveNote, System, StaveTie, Voice } = Vex.Flow;
+const { Barline, Beam, Factory, Registry, KeySignature, StaveModifier, 
+  StaveNote, System, StaveTie, Voice
+} = Vex.Flow;
 // const { SINGLE, DOUBLE, END, NONE,
 //   REPEAT_BEGIN, REPEAT_BOTH, REPEAT_END
 // } = Barline.type;
@@ -18,7 +19,7 @@ const { END } = StaveModifier.Position;
 export default (noodle, windowWidth) => {
 
   // windowSpec
-  let scoreWidth = windowWidth // Math.max(windowWidth * 0.75, 500);
+  let scoreWidth = Math.max(windowWidth * 0.75, 375);
   // let canvasHeight = Math.max(windowHeight * 0.75, 500);
 
   // Boilerplate
@@ -39,13 +40,8 @@ export default (noodle, windowWidth) => {
   // let beam = score.beam.bind(score);
   // let tuplet = score.tuplet.bind(score);
 
-  // prefer to give each measure x, y, and width values in reducer below
-  // initialize score with first system indented, per engraving custom
-  // let x = 120;
-  // let y = 20;
-
   let makeSystem = (x, y, width) => {
-    return vex.System({ x: x, y: y, width: width, spaceBetweenStaves: 10 });
+    return vex.System({ x: x, y: y, width: width, spaceBetweenStaves: 9 });
   }
 
   // todo -> write reducer that determines width and position of current measure
@@ -56,16 +52,16 @@ export default (noodle, windowWidth) => {
   let modifications = {};
 
   measures.forEach((measure, mNo) => {
-    let { isPickup, keySig, timeSig,
+    let { keySig, timeSig,
       showClef, showKey, showTime,
       endClef, endKey, endTime,
       staves, barlines, connectors,
       x, y, width
     } = measure;
 
-    console.log(measure);
-
     score.set({ time: timeSig })
+
+    let staveCount = Object.keys(staves).length;
 
     let system = makeSystem(x, y, width);
 
@@ -78,6 +74,7 @@ export default (noodle, windowWidth) => {
 
         voice.forEach((noteObj, nNo) => {
           let { clef, keys, duration, modifiers } = noteObj;
+          keys = keys.map(k => stripAccidental(keySig, k));
           let note = (keys.length === 1 ? keys[0] : `(${keys.join(" ")})`) + `/${duration}`;
           if (modifiers) {
             // todo -> figure out if each note in keys array gets its own id
@@ -108,7 +105,7 @@ export default (noodle, windowWidth) => {
       if (endTime) { staff.addEndTimeSignature(endTime); }
 
 
-      if (_.isEmpty(connectors)) {
+      if (staveCount === 1) {
         staff.addModifier(new Barline(barlines.left));
         staff.addEndModifier(new Barline(barlines.right));
       }
@@ -120,24 +117,24 @@ export default (noodle, windowWidth) => {
       connectors.forEach(conn => { system.addConnector(conn); });
     }
 
-    vex.draw();
-
-    console.log(vex.context)
-    console.log(system.context)
-
 
   })
   
-  // this function should add an x, y, and width property to each measure
-  // as well as add markers as to whether clefs, key signatures, and time signatures should
-  // be displayed (see src/deprecated/renderScore.js for simplifyMeasures reducer)
+  vex.draw();
 
-  // AS WELL AS TEMPO/TEMPO CHANGE INFORMATION
+  // draw in additional modifiers or rendering logic from underlying api
+  let context = vex.context;
 
-  // ideally, it will also intelligently identify groups of notes to be beamed and groups of notes to be tupled
   
 }
 
+// this function should add an x, y, and width property to each measure
+// as well as add markers as to whether clefs, key signatures, and time signatures should
+// be displayed (see src/deprecated/renderScore.js for simplifyMeasures reducer)
+
+// AS WELL AS TEMPO/TEMPO CHANGE INFORMATION
+
+// ideally, it will also intelligently identify groups of notes to be beamed and groups of notes to be tupled
 // curried to make scoreWidth available
 const simplifyMeasures = scoreWidth => (acc, measure, _index) => {
   
@@ -151,6 +148,7 @@ const simplifyMeasures = scoreWidth => (acc, measure, _index) => {
   }
   
   let maxLength = _.maxBy(voices, v => v.length).length;
+
   
   measure.connectors = [];
   
@@ -166,31 +164,48 @@ const simplifyMeasures = scoreWidth => (acc, measure, _index) => {
       scoreWidth - measure.x - 20
     ) + 90;
 
-    console.log(measure.width)
-
     if (Object.keys(staves).length > 1) {
       measure.connectors.push("brace");
     }
 
+    if (!_.isEmpty(measure.connectors)) {
+
+    }
+
     return [ measure ];
-  }
-  
-  // subsequent measures
-  // let prev = _.initial(acc);
-  // let lastMeasure  = _.last(acc);
-  // if (_.isEmpty(prev)) {
 
-  // } else {
+  } else { // subsequent measures
+    let prev = _.initial(acc);
+    let lastMeasure  = _.last(acc);
+
+    if (measure.keySig !== lastMeasure.keySig) {
+      lastMeasure.endKey = measure.keySig;
+    }
+
+    if (measure.timeSig !== lastMeasure.timeSig) {
+      lastMeasure.endTime = measure.timeSig;
+    }
+
+    measure.x = lastMeasure.x + lastMeasure.width;
+    measure.y = lastMeasure.y;
+    measure.width = Math.min(
+      maxLength * 30,
+      scoreWidth - measure.x - 20
+    );
+
     
-  // }
+    return [...prev, lastMeasure, measure];
 
-
-
-
-  return [...acc, measure];
+  }
 
 }
 
 const concat = (a, b) => a.concat(b);
-const isAccidental = (pitch, key) => !theKeys[key].includes(pitch);
+const isAccidental = keySig => pitch => !theKeys[keySig].includes(pitch);
+const stripAccidental = (keySig, key) => {
+  console.log(key)
+  let [pitch, register] = key.split("/");
+  pitch = isAccidental(keySig)(pitch) ? pitch : pitch.charAt(0);
+  return [pitch, register].join("");
+}
 

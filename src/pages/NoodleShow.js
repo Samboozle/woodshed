@@ -7,8 +7,10 @@ const NoodleShow = props => {
 
   return(
     <div id="score-display" className="w-full flex justify-center">
-      <Score selectedNoodle={selectedNoodle} />
-      <div> {selectedNoodle.description} </div>
+      <div>
+        <Score selectedNoodle={selectedNoodle} />
+        <div> {selectedNoodle.description} </div>
+      </div>
     </div>
   );
 }
