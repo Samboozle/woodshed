@@ -16,10 +16,9 @@ const { END } = StaveModifier.Position;
 // I decided to use easyscore after reading this test and finding its solution
 // to note modification impressive.
 
-export default (noodle, windowWidth) => {
+export default (noodle, scale) => {
 
   // windowSpec
-  let scoreWidth = Math.max(windowWidth * 0.75, 375);
   // let canvasHeight = Math.max(windowHeight * 0.75, 500);
 
   // Boilerplate
@@ -30,15 +29,21 @@ export default (noodle, windowWidth) => {
   const retrieve = id => registry.getElementById(id);
 
   // instantiate score
-  let vex = new Factory({ renderer: { elementId: "score" } })
+  let vex = new Factory({ renderer: { elementId: "score", width: 850, height: 1100 },
+                          stave: { space: 10 },
+                          font: { face: 'Arial', point: 10, style: "" }
+                        })
+
+  let context = vex.context;
   let score = vex.EasyScore();
+  context.scale(scale, scale);
+  
 
   // Helpers
   // shorthand for score.[method]
   let makeVoice = score.voice.bind(score);
   let makeNotes = score.notes.bind(score);
-  // let beam = score.beam.bind(score);
-  // let tuplet = score.tuplet.bind(score);
+  let tuplet = score.tuplet.bind(score);
 
   let makeSystem = (x, y, width) => {
     return vex.System({ x: x, y: y, width: width, spaceBetweenStaves: 9 });
@@ -47,7 +52,7 @@ export default (noodle, windowWidth) => {
   // todo -> write reducer that determines width and position of current measure
   // by comparing it to density of NEXT measure;
   
-  let measures = noodle.measures.reduce(simplifyMeasures(scoreWidth), []);
+  let measures = noodle.measures.reduce(simplifyMeasures(scale), []);
 
   let modifications = {};
 
@@ -123,7 +128,6 @@ export default (noodle, windowWidth) => {
   vex.draw();
 
   // draw in additional modifiers or rendering logic from underlying api
-  let context = vex.context;
 
   
 }
@@ -135,8 +139,8 @@ export default (noodle, windowWidth) => {
 // AS WELL AS TEMPO/TEMPO CHANGE INFORMATION
 
 // ideally, it will also intelligently identify groups of notes to be beamed and groups of notes to be tupled
-// curried to make scoreWidth available
-const simplifyMeasures = scoreWidth => (acc, measure, _index) => {
+// curried to make scale available
+const simplifyMeasures = scale => (acc, measure, _index) => {
   
   let { staves, barlines, keySig, timeSig, isPickup } = measure;
   let voices = [];
@@ -157,11 +161,11 @@ const simplifyMeasures = scoreWidth => (acc, measure, _index) => {
     measure.showClef = true;
     measure.showKey = true;
     measure.showTime = true;
-    measure.x = 50;
-    measure.y = 20;
+    measure.x = 40;
+    measure.y = 10;
     measure.width = Math.min(
       maxLength * 30,
-      scoreWidth - measure.x - 20
+      800 - measure.x - 20
     ) + 90;
 
     if (Object.keys(staves).length > 1) {
@@ -190,12 +194,10 @@ const simplifyMeasures = scoreWidth => (acc, measure, _index) => {
     measure.y = lastMeasure.y;
     measure.width = Math.min(
       maxLength * 30,
-      scoreWidth - measure.x - 20
+      800 - measure.x - 20
     );
 
-    
     return [...prev, lastMeasure, measure];
-
   }
 
 }

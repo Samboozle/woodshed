@@ -1,14 +1,27 @@
-import React, { useEffect, useLayoutEffect } from 'react';
-import _ from 'lodash';
-
+import React, { useEffect, useState } from 'react';
+import _ from 'lodash'
 import { renderScore } from '../music-logic';
 
 
 export default props => {
-  useEffect(() => { renderScore(props.selectedNoodle, window.innerWidth) });
+  const [scale, setScale] = useState(Math.min(window.innerWidth / 1000, 1));
 
-  return <div id="score" className="" />;
+  const updateScale = _ => setScale(Math.min(window.innerWidth / 1000, 1));
+
+  useEffect(_ => {
+    window.addEventListener("resize", updateScale);
+    return _ => document.removeEventListener("resize", updateScale);
+  });
+
+  useEffect(_ => {
+    const score = document.getElementById("score");
+    while (score.firstChild) { score.removeChild(score.lastChild); }
+    renderScore(props.selectedNoodle, scale);
+  }, [scale]);
+
+  return <div id="score" className="flex" />;
 }
+
 
 // export default class Score extends React.Component {
 
@@ -21,9 +34,8 @@ export default props => {
 //       renderScore(this.props.selectedNoodle, window.innerWidth);
 //     }
 //   }
-
 //   render() {
-//     return <div id="score" className="flex" />;
+//     return <div id="score" className="" />;
 //   }
 
 // }

@@ -5,11 +5,16 @@ export default ({noodle, setNoodle}) => {
   const [secondaryTools, setSecondaryTools] = useState(null);
 
   return(
-    <div
-      className="w-48 h-16 flex flex-row shadow"
-    >
-      {renderTools(noodle, setNoodle)}
-    </div>
+    <>
+      <div
+        className="w-48 h-16 flex flex-row shadow"
+      >
+        {renderTools(noodle, setNoodle)}
+      </div>
+      <div>
+        {/* {renderSecondary()} */}
+      </div>
+    </>
   );
 }
 

@@ -12,6 +12,7 @@ export default _ => {
 
   return (
     <div id="score-editor" className="w-full h-full space-y-8">
+
       <div className="flex w-full justify-center">
         <Score selectedNoodle={minuetOne} />
       </div>
