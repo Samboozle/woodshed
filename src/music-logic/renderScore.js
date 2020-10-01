@@ -2,24 +2,16 @@ import Vex from 'vexflow';
 import _ from 'lodash';
 import theKeys from './theKeys';
 
-const { Barline, Beam, Factory, Registry, KeySignature, StaveModifier, 
-  StaveNote, System, StaveTie, Voice
-} = Vex.Flow;
-// const { SINGLE, DOUBLE, END, NONE,
-//   REPEAT_BEGIN, REPEAT_BOTH, REPEAT_END
-// } = Barline.type;
+const { Barline, Beam, Factory, Registry,
+        StaveModifier, StaveNote, StaveTie, Voice
+      } = Vex.Flow;
+
 const { END } = StaveModifier.Position;
 
-// this function was inspired by the BachTests in the VexFlow project on github,
-// specifically: https://github.com/0xfe/vexflow/blob/master/tests/bach_tests.js
-
-// I decided to use easyscore after reading this test and finding its solution
-// to note modification impressive.
+// this function was inspired by this test in the VexFlow project on github:
+// https://github.com/0xfe/vexflow/blob/master/tests/bach_tests.js
 
 export default (noodle, scale) => {
-
-  // windowSpec
-  // let canvasHeight = Math.max(windowHeight * 0.75, 500);
 
   // Boilerplate
   // registry allows notes to be marked with unique identifiers for later modification,
@@ -28,16 +20,20 @@ export default (noodle, scale) => {
   Registry.enableDefaultRegistry(registry);
   const retrieve = id => registry.getElementById(id);
 
-  // instantiate score
-  let vex = new Factory({ renderer: { elementId: "score", width: 850, height: 1100 },
-                          stave: { space: 10 },
-                          font: { face: 'Arial', point: 10, style: "" }
-                        })
+  let measures = noodle.measures.reduce(simplifyMeasures(scale), []);
 
-  let context = vex.context;
+  // instantiate score
+  let vex = new Factory({ renderer: { elementId: "score", width: scale * 1024,
+                                      height: scale * (_.last(measures).y + 240) }, // adds clearance to bottom of score
+                          stave: { space: 10 },
+                          font: { face: "Arial", point: 10, style: "" }
+                        });
+
+  console.log(vex.context)
+
+  let context = vex.getContext();
   let score = vex.EasyScore();
   context.scale(scale, scale);
-  
 
   // Helpers
   // shorthand for score.[method]
@@ -49,22 +45,18 @@ export default (noodle, scale) => {
     return vex.System({ x: x, y: y, width: width, spaceBetweenStaves: 9 });
   }
 
-  // todo -> write reducer that determines width and position of current measure
-  // by comparing it to density of NEXT measure;
-  
-  let measures = noodle.measures.reduce(simplifyMeasures(scale), []);
 
   let modifications = {};
 
   measures.forEach((measure, mNo) => {
     let { keySig, timeSig,
       showClef, showKey, showTime,
-      endClef, endKey, endTime,
+      // endClef, endKey, endTime,
       staves, barlines, connectors,
       x, y, width
     } = measure;
 
-    score.set({ time: timeSig })
+    score.set({ time: timeSig });
 
     let staveCount = Object.keys(staves).length;
 
@@ -73,7 +65,7 @@ export default (noodle, scale) => {
     for (let staveClef in staves) {
       let voices = staves[staveClef];
       let vs = [];
-
+     
       voices.forEach((voice, vNo) => {
         let ns = [];
 
@@ -97,19 +89,23 @@ export default (noodle, scale) => {
 
       let staff = system.addStave({ voices: vs });
 
+      // I originally had logic for showing time- and key-signature changes
+      // at the ends of measures, but Vexflow's rendering for end-of-measure
+      // signatures didn't behave as I expected.
+
       if (showClef) { staff.addClef(staveClef); }
 
-      if (endClef) { staff.addEndClef(endClef); }
+      // if (endClef) { staff.addEndClef(endClef); }
 
       if (showKey) { staff.addKeySignature(keySig); }
 
-      if (endKey) { staff.addModifier(new KeySignature(endKey, END), END); }
+      // if (endKey) { staff.addModifier(new KeySignature(endKey, END), END); }
 
       if (showTime) { staff.addTimeSignature(timeSig); }
 
-      if (endTime) { staff.addEndTimeSignature(endTime); }
+      // if (endTime) { staff.addEndTimeSignature(endTime); }
 
-
+      console.log(staveCount)
       if (staveCount === 1) {
         staff.addModifier(new Barline(barlines.left));
         staff.addEndModifier(new Barline(barlines.right));
@@ -117,13 +113,28 @@ export default (noodle, scale) => {
 
     }
     
-    if (!_.isEmpty(connectors)) {
-      system.addConnector()
-      connectors.forEach(conn => { system.addConnector(conn); });
+    connectors.forEach(conn => { system.addConnector(conn); });
+
+
+  });
+  console.log(Vex.Flow)
+  for (let id in modifications) {
+    let modObject = modifications[id];
+    let currNote = retrieve(id);
+    for (let modKey in modObject) {
+      let mod = modObject[modKey];
+      switch(modKey) {
+        case "artic":
+          currNote.addModifier(0, vex.Articulation(mod));
+          break;
+        case "finger":
+          currNote.addModifier(0, vex.Fingering(mod));
+          break;
+        default:
+          break;
+      }
     }
-
-
-  })
+  }
   
   vex.draw();
 
@@ -153,27 +164,21 @@ const simplifyMeasures = scale => (acc, measure, _index) => {
   
   let maxLength = _.maxBy(voices, v => v.length).length;
 
-  
   measure.connectors = [];
   
-  // conditions for first measure
-  if (_.isEmpty(acc)) {
+  if (_.isEmpty(acc)) { // conditions for first measure
     measure.showClef = true;
     measure.showKey = true;
     measure.showTime = true;
-    measure.x = 40;
+    measure.x = 80;
     measure.y = 10;
     measure.width = Math.min(
-      maxLength * 30,
-      800 - measure.x - 20
+      maxLength * 40,
+      890
     ) + 90;
 
     if (Object.keys(staves).length > 1) {
-      measure.connectors.push("brace");
-    }
-
-    if (!_.isEmpty(measure.connectors)) {
-
+      measure.connectors.push("brace", "singleLeft");
     }
 
     return [ measure ];
@@ -182,20 +187,29 @@ const simplifyMeasures = scale => (acc, measure, _index) => {
     let prev = _.initial(acc);
     let lastMeasure  = _.last(acc);
 
+    measure.x = lastMeasure.x + lastMeasure.width;
+    measure.y = lastMeasure.y;
+    measure.width = maxLength * 40;
+
     if (measure.keySig !== lastMeasure.keySig) {
-      lastMeasure.endKey = measure.keySig;
+      measure.showKey = true;
+      measure.width += 30;
     }
 
     if (measure.timeSig !== lastMeasure.timeSig) {
-      lastMeasure.endTime = measure.timeSig;
+      measure.showTime = true;
+      measure.width += 30;
     }
 
-    measure.x = lastMeasure.x + lastMeasure.width;
-    measure.y = lastMeasure.y;
-    measure.width = Math.min(
-      maxLength * 30,
-      800 - measure.x - 20
-    );
+    if (measure.x + measure.width > 980) {
+      measure.x = 40;
+      measure.y += 200;
+      measure.showClef = true;
+      measure.showKey = true;
+      measure.width += 90;
+      lastMeasure.width = 980 - lastMeasure.x;
+      measure.connectors.push("brace", "singleLeft");
+    }
 
     return [...prev, lastMeasure, measure];
   }
@@ -205,7 +219,6 @@ const simplifyMeasures = scale => (acc, measure, _index) => {
 const concat = (a, b) => a.concat(b);
 const isAccidental = keySig => pitch => !theKeys[keySig].includes(pitch);
 const stripAccidental = (keySig, key) => {
-  console.log(key)
   let [pitch, register] = key.split("/");
   pitch = isAccidental(keySig)(pitch) ? pitch : pitch.charAt(0);
   return [pitch, register].join("");

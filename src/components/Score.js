@@ -1,12 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import _ from 'lodash'
 import { renderScore } from '../music-logic';
 
-
 export default props => {
-  const [scale, setScale] = useState(Math.min(window.innerWidth / 1000, 1));
+  const breakPoints = [1280, 1024, 768, 640, 300, 0];
 
-  const updateScale = _ => setScale(Math.min(window.innerWidth / 1000, 1));
+  const nearestBreakpoint = _ => breakPoints.find(v => v < window.innerWidth);
+
+  const [breakpoint, setBreakpoint] = useState(nearestBreakpoint());
+
+  const [scale, setScale] = useState(nearestBreakpoint() / 1024);
+
+  const updateScale = _ => {
+    let newBreakpoint = nearestBreakpoint();
+    if (breakpoint !== newBreakpoint) {
+      setBreakpoint(newBreakpoint);
+      setScale(nearestBreakpoint() / 1024);
+    }
+  }
 
   useEffect(_ => {
     window.addEventListener("resize", updateScale);
@@ -17,25 +27,7 @@ export default props => {
     const score = document.getElementById("score");
     while (score.firstChild) { score.removeChild(score.lastChild); }
     renderScore(props.selectedNoodle, scale);
-  }, [scale]);
+  }, [props.selectedNoodle, scale]);
 
-  return <div id="score" className="flex" />;
+  return <div id="score" style={{ border: "1px solid black" }} />;
 }
-
-
-// export default class Score extends React.Component {
-
-//   componentDidMount() {
-//     renderScore(this.props.selectedNoodle, window.innerWidth);
-//   }
-
-//   componentDidUpdate(prevProps, _prevState) {
-//     if (!(_.isEqual(prevProps.selectedNoodle, this.props.selectedNoodle))) {
-//       renderScore(this.props.selectedNoodle, window.innerWidth);
-//     }
-//   }
-//   render() {
-//     return <div id="score" className="" />;
-//   }
-
-// }
