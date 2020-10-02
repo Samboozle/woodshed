@@ -6,14 +6,11 @@ export default props => {
 
   const nearestBreakpoint = _ => breakPoints.find(v => v < window.innerWidth);
 
-  const [breakpoint, setBreakpoint] = useState(nearestBreakpoint());
-
   const [scale, setScale] = useState(nearestBreakpoint() / 1024);
 
   const updateScale = _ => {
-    let newBreakpoint = nearestBreakpoint();
-    if (breakpoint !== newBreakpoint) {
-      setBreakpoint(newBreakpoint);
+    let newScale = nearestBreakpoint() / 1024;
+    if (scale !== newScale) {
       setScale(nearestBreakpoint() / 1024);
     }
   }
@@ -25,9 +22,13 @@ export default props => {
 
   useEffect(_ => {
     const score = document.getElementById("score");
+    // when state changes, score is destroyed and repainted
     while (score.firstChild) { score.removeChild(score.lastChild); }
     renderScore(props.selectedNoodle, scale);
   }, [props.selectedNoodle, scale]);
 
-  return <div id="score" style={{ border: "1px solid black" }} />;
+  return <div id="score"
+    style={{ border: "1px solid black" }}
+    className="mb-16"
+  />;
 }

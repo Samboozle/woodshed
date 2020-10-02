@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Score, EditorTools } from '../components';
-import { minuetOne } from '../passages';
+import { Score, /* EditorTools */ } from '../../components';
+import { minuetOne } from '../../passages';
 
 // const noodleReducer = (state, action) => {
 

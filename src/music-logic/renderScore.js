@@ -13,9 +13,7 @@ const { END } = StaveModifier.Position;
 
 export default (noodle, scale) => {
 
-  // Boilerplate
-  // registry allows notes to be marked with unique identifiers for later modification,
-  // even across barlines
+  // registry allows notes to be marked with unique identifiers for later modification
   let registry = new Registry();
   Registry.enableDefaultRegistry(registry);
   const retrieve = id => registry.getElementById(id);
@@ -39,7 +37,7 @@ export default (noodle, scale) => {
   // shorthand for score.[method]
   let makeVoice = score.voice.bind(score);
   let makeNotes = score.notes.bind(score);
-  let tuplet = score.tuplet.bind(score);
+  // let tuplet = score.tuplet.bind(score);
 
   let makeSystem = (x, y, width) => {
     return vex.System({ x: x, y: y, width: width, spaceBetweenStaves: 9 });
@@ -47,6 +45,7 @@ export default (noodle, scale) => {
 
 
   let modifications = {};
+  let beams = [];
 
   measures.forEach((measure, mNo) => {
     let { keySig, timeSig,
@@ -84,6 +83,11 @@ export default (noodle, scale) => {
         });
 
         ns = ns.reduce(concat);
+
+        // TODO -> beaming logic should be more involved considering
+        // there can be multiple voices in a given stave. WIP
+        beams.push(Beam.generateBeams(ns));
+
         vs.push(makeVoice(ns));
       })
 
@@ -95,15 +99,9 @@ export default (noodle, scale) => {
 
       if (showClef) { staff.addClef(staveClef); }
 
-      // if (endClef) { staff.addEndClef(endClef); }
-
       if (showKey) { staff.addKeySignature(keySig); }
 
-      // if (endKey) { staff.addModifier(new KeySignature(endKey, END), END); }
-
       if (showTime) { staff.addTimeSignature(timeSig); }
-
-      // if (endTime) { staff.addEndTimeSignature(endTime); }
 
       console.log(staveCount)
       if (staveCount === 1) {
@@ -115,9 +113,8 @@ export default (noodle, scale) => {
     
     connectors.forEach(conn => { system.addConnector(conn); });
 
-
   });
-  console.log(Vex.Flow)
+
   for (let id in modifications) {
     let modObject = modifications[id];
     let currNote = retrieve(id);
@@ -138,9 +135,8 @@ export default (noodle, scale) => {
   
   vex.draw();
 
-  // draw in additional modifiers or rendering logic from underlying api
+  beams.forEach(beamGroup => beamGroup.forEach(beam => { beam.setContext(context).draw() }))
 
-  
 }
 
 // this function should add an x, y, and width property to each measure

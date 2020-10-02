@@ -1,5 +1,10 @@
 import { minuetOne } from '../passages';
 
-export default _ => {
-  return minuetOne;
+export default (selectedSong = minuetOne, { type, payload }) => {
+  switch (type) {
+    case "NOODLE_SELECTED":
+      return payload;
+    default:
+      return selectedSong;
+  }
 }

@@ -6,7 +6,7 @@ const NoodleShow = props => {
   const { selectedNoodle } = props;
 
   return(
-    <div id="score-display" className="w-full flex justify-center">
+    <div id="score-display" className="w-full h-full flex justify-center">
       <div>
         <Score selectedNoodle={selectedNoodle} />
         <div> {selectedNoodle.description} </div>
