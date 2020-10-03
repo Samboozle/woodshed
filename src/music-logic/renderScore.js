@@ -27,27 +27,24 @@ export default (noodle, scale) => {
                           font: { face: "Arial", point: 10, style: "" }
                         });
 
-  console.log(vex.context)
-
   let context = vex.getContext();
   let score = vex.EasyScore();
   context.scale(scale, scale);
 
-  // Helpers
-  // shorthand for score.[method]
+  // Helpers - shorthand for score.[method]
   let makeVoice = score.voice.bind(score);
   let makeNotes = score.notes.bind(score);
-  // let tuplet = score.tuplet.bind(score);
+  // let makeBeam = score.beam.bind(score); as of now handled with Beam.generateBeams (subject to change)
+  // let makeTuplet = score.tuplet.bind(score); as of yet unimplimented
 
   let makeSystem = (x, y, width) => {
     return vex.System({ x: x, y: y, width: width, spaceBetweenStaves: 9 });
   }
 
-
   let modifications = {};
   let beams = [];
 
-  measures.forEach((measure, mNo) => {
+  measures.forEach((measure, mNo, thisArg) => {
     let { keySig, timeSig,
       showClef, showKey, showTime,
       // endClef, endKey, endTime,
@@ -73,13 +70,13 @@ export default (noodle, scale) => {
           keys = keys.map(k => stripAccidental(keySig, k));
           let note = (keys.length === 1 ? keys[0] : `(${keys.join(" ")})`) + `/${duration}`;
           if (modifiers) {
-            // todo -> figure out if each note in keys array gets its own id
             // the nesting of this measure object lets us assign a unique identifier to each note
+            // TODO -> consider giving each notehead an id. currently, id is assigned to temporal instance
             let noteId = `M${mNo}C${staveClef}V${vNo}N${nNo}`;
             modifications[noteId] = modifiers;
             note += `[id="${noteId}"]`;
           }
-          ns.push(makeNotes(note, { clef: clef }));
+          ns.push(makeNotes(note, { clef }));
         });
 
         ns = ns.reduce(concat);
@@ -103,11 +100,8 @@ export default (noodle, scale) => {
 
       if (showTime) { staff.addTimeSignature(timeSig); }
 
-      console.log(staveCount)
-      if (staveCount === 1) {
-        staff.addModifier(new Barline(barlines.left));
-        staff.addEndModifier(new Barline(barlines.right));
-      }
+      staff.addModifier(new Barline(barlines.left));
+      staff.setEndBarType(barlines.right);
 
     }
     
@@ -127,6 +121,11 @@ export default (noodle, scale) => {
         case "finger":
           currNote.addModifier(0, vex.Fingering(mod));
           break;
+        case "grace":
+          let graceNotes = mod.notes.map(grace => vex.GraceNote(grace));
+          currNote.addModifier(0, vex.GraceNoteGroup({ notes: graceNotes }));
+          vex.StaveTie({ from: _.last(graceNotes), to: currNote});
+          break;
         default:
           break;
       }
@@ -139,15 +138,11 @@ export default (noodle, scale) => {
 
 }
 
-// this function should add an x, y, and width property to each measure
-// as well as add markers as to whether clefs, key signatures, and time signatures should
-// be displayed (see src/deprecated/renderScore.js for simplifyMeasures reducer)
+// simplifyMeasures adds markers to each measure that the Vexflow renderer will use,
+// like x and y positioning, markers as to which measures should actually display their
+// key and time signatures, etc.
 
-// AS WELL AS TEMPO/TEMPO CHANGE INFORMATION
-
-// ideally, it will also intelligently identify groups of notes to be beamed and groups of notes to be tupled
-// curried to make scale available
-const simplifyMeasures = scale => (acc, measure, _index) => {
+const simplifyMeasures = scale => (acc, measure, index, thisArg) => {
   
   let { staves, barlines, keySig, timeSig, isPickup } = measure;
   let voices = [];
@@ -159,8 +154,11 @@ const simplifyMeasures = scale => (acc, measure, _index) => {
   }
   
   let maxLength = _.maxBy(voices, v => v.length).length;
+  let baseWidth = maxLength * 40; // simply using 40 pixels per notehead.
+                                  // consider adjusting this based on note duration.
 
-  measure.connectors = [];
+  measure.connectors = []; // could instantiate with a default of singleRight, but that creates
+                           // a visual bug where overlapping barlines are drawn.
   
   if (_.isEmpty(acc)) { // conditions for first measure
     measure.showClef = true;
@@ -169,7 +167,7 @@ const simplifyMeasures = scale => (acc, measure, _index) => {
     measure.x = 80;
     measure.y = 10;
     measure.width = Math.min(
-      maxLength * 40,
+      baseWidth,
       890
     ) + 90;
 
@@ -185,7 +183,7 @@ const simplifyMeasures = scale => (acc, measure, _index) => {
 
     measure.x = lastMeasure.x + lastMeasure.width;
     measure.y = lastMeasure.y;
-    measure.width = maxLength * 40;
+    measure.width = baseWidth;
 
     if (measure.keySig !== lastMeasure.keySig) {
       measure.showKey = true;
@@ -204,7 +202,13 @@ const simplifyMeasures = scale => (acc, measure, _index) => {
       measure.showKey = true;
       measure.width += 90;
       lastMeasure.width = 980 - lastMeasure.x;
+      lastMeasure.connectors.push("singleRight");
       measure.connectors.push("brace", "singleLeft");
+    }
+
+    if (index === thisArg.length - 1) { // is last measure
+      measure.width = 980 - measure.x;
+      measure.connectors.push("boldDoubleRight");
     }
 
     return [...prev, lastMeasure, measure];
