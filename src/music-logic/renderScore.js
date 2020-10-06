@@ -22,7 +22,7 @@ export default (noodle, scale) => {
 
   // instantiate score
   let vex = new Factory({ renderer: { elementId: "score", width: scale * 1024,
-                                      height: scale * (_.last(measures).y + 240) }, // adds clearance to bottom of score
+                                      height: scale * (_.last(measures).y + (150 * Object.keys(measures[0].staves).length)) }, // adds clearance to bottom of score
                           stave: { space: 10 },
                           font: { face: "Arial", point: 10, style: "" }
                         });
@@ -64,10 +64,12 @@ export default (noodle, scale) => {
      
       voices.forEach((voice, vNo) => {
         let ns = [];
-
+        let accidentals = [];
         voice.forEach((noteObj, nNo) => {
           let { clef, keys, duration, modifiers } = noteObj;
-          keys = keys.map(k => stripAccidental(keySig, k));
+          keys = keys.map(pitch => {
+            return stripAccidental(keySig, pitch)
+          });
           let note = (keys.length === 1 ? keys[0] : `(${keys.join(" ")})`) + `/${duration}`;
           if (modifiers) {
             // the nesting of this measure object lets us assign a unique identifier to each note
@@ -104,8 +106,10 @@ export default (noodle, scale) => {
       staff.setEndBarType(barlines.right);
 
     }
-    
-    connectors.forEach(conn => { system.addConnector(conn); });
+
+    if (staveCount > 1) {
+      connectors.forEach(conn => { system.addConnector(conn); });
+    }
 
   });
 
@@ -156,6 +160,7 @@ const simplifyMeasures = scale => (acc, measure, index, thisArg) => {
   let maxLength = _.maxBy(voices, v => v.length).length;
   let baseWidth = maxLength * 40; // simply using 40 pixels per notehead.
                                   // consider adjusting this based on note duration.
+  let staveCount = Object.keys(staves).length;
 
   measure.connectors = []; // could instantiate with a default of singleRight, but that creates
                            // a visual bug where overlapping barlines are drawn.
@@ -171,7 +176,7 @@ const simplifyMeasures = scale => (acc, measure, index, thisArg) => {
       890
     ) + 90;
 
-    if (Object.keys(staves).length > 1) {
+    if (staveCount > 1) {
       measure.connectors.push("brace", "singleLeft");
     }
 
@@ -197,7 +202,7 @@ const simplifyMeasures = scale => (acc, measure, index, thisArg) => {
 
     if (measure.x + measure.width > 980) {
       measure.x = 40;
-      measure.y += 200;
+      measure.y += Math.max(120, 100 * staveCount);
       measure.showClef = true;
       measure.showKey = true;
       measure.width += 90;

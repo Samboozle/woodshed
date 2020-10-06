@@ -27,8 +27,5 @@ export default props => {
     renderScore(props.selectedNoodle, scale);
   }, [props.selectedNoodle, scale]);
 
-  return <div id="score"
-    style={{ border: "1px solid black" }}
-    className="mb-16"
-  />;
+  return <div id="score" style={{ border: "1px solid black" }} />;
 }

@@ -1,7 +1,7 @@
 import minuetOne from './minuetOne';
-// import etudeOne from './etudeOne';
+import etudeOne from './etudeOne';
 
 export {
   minuetOne,
-  // etudeOne
+  etudeOne
 }
