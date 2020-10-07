@@ -64,13 +64,42 @@ export default (noodle, scale) => {
      
       voices.forEach((voice, vNo) => {
         let ns = [];
-        let accidentals = [];
+        let accidSoFar = [];
+        let strip = stripAccidental(keySig);
+        let accid = isAccidental(keySig);
+
         voice.forEach((noteObj, nNo) => {
           let { clef, keys, duration, modifiers } = noteObj;
-          keys = keys.map(pitch => {
-            return stripAccidental(keySig, pitch)
-          });
-          let note = (keys.length === 1 ? keys[0] : `(${keys.join(" ")})`) + `/${duration}`;
+
+          let strippedKeys = keys.map(strip);
+
+          // TODO -> evaluate options regarding accidental handling.
+          // option 1: give each note an explicit accidental from the outset and forego key signature checking.
+          // option 2: leave key signature checking in, give every note its correct pitch, and future-proof the thing.
+
+          // let strippedKeys = [];
+          
+          // this block handles accidentals; accidentals are only shown
+          // on the first instance of the note in question PER REGISTER
+          // e.g., c#4 -> c#4 will only show one sharp symbol, but
+          //       bb4 -> bb3 will show both.
+          // keys.forEach(key => {
+          //   let [pitch, register] = key.split("/");
+          //   console.log(pitch, keySig, accid(pitch))
+          //   if (accid(pitch)) {
+          //     if (accidSoFar.includes(key)) {
+          //       strippedKeys.push([pitch[0], register].join(""));
+          //     } else {
+          //       accidSoFar.push(key)
+          //       strippedKeys.push(strip(key));
+          //     }
+          //   } else {
+          //     strippedKeys.push(strip(key));
+          //   }
+          // });
+
+          let note = (strippedKeys.length === 1 ? strippedKeys[0] : `(${strippedKeys.join(" ")})`) + `/${duration}`;
+
           if (modifiers) {
             // the nesting of this measure object lets us assign a unique identifier to each note
             // TODO -> consider giving each notehead an id. currently, id is assigned to temporal instance
@@ -223,9 +252,8 @@ const simplifyMeasures = scale => (acc, measure, index, thisArg) => {
 
 const concat = (a, b) => a.concat(b);
 const isAccidental = keySig => pitch => !theKeys[keySig].includes(pitch);
-const stripAccidental = (keySig, key) => {
-  let [pitch, register] = key.split("/");
-  pitch = isAccidental(keySig)(pitch) ? pitch : pitch.charAt(0);
-  return [pitch, register].join("");
+const stripAccidental = keySig => pitch => {
+  let [note, register] = pitch.split("/");
+  note = isAccidental(keySig)(note) ? note : note[0];
+  return [note, register].join("");
 }
-

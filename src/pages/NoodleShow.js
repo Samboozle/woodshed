@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 
 import JSONPretty from 'react-json-pretty';
@@ -7,6 +7,14 @@ import { About, Button, Score } from '../components';
 const NoodleShow = props => {
   const { selectedNoodle } = props;
   const [ view, setView ] = useState("json");
+  const [ yPos, setYPos ] = useState(window.pageYOffset);
+
+  const updateYPos = _ => { setYPos(window.pageYOffset); }
+
+  useEffect(_ => {
+    window.addEventListener("scroll", updateYPos);
+    return _ => document.removeEventListener("scroll", updateYPos);
+  }, [yPos, setYPos])
 
   const renderNoodle = _ => {
     switch (view) {
@@ -31,22 +39,22 @@ const NoodleShow = props => {
           </div>
         );
       default:
-        return <div> something went wrong </div>
+        return <div> something went wrong </div>;
     }
   }
 
-  const objText = "{ ... }"
+  const objText = "{ ... }";
 
   return(
     <div id="score-display" className="w-full h-full pt-4 mb-10">
       { selectedNoodle
         ? <div>
             <div className="flex items-center pb-2">
-              <Button text="See JSON" onClick={_ => setView("json")} />
+              <Button text="See JSON" callback={_ => setView("json")} />
               <div className={ "px-3 font-semibold text-green-" + (view === "json" ? "600" : "300") }>
                 { objText }
               </div>
-              <Button text="See Score" onClick={_ => setView("score")} />
+              <Button text="See Score" callback={_ => setView("score")} />
               <span className="px-3">
                 <img
                   src={ "icons/music-green" + (view !== "score" ? "-light" : "") + ".png" }
@@ -54,9 +62,13 @@ const NoodleShow = props => {
                 />
               </span>
             </div>
-            {renderNoodle()}
+            { renderNoodle() }
           </div>
         : <About /> }
+        { yPos > 240 &&
+          <div className="bottom-0 right-0 mb-16 mr-16 fixed">
+            <Button text="Back to Top" callback={_ => window.scrollTo(0, 0)} />
+          </div> }
     </div>
   );
 }

@@ -17,10 +17,14 @@ const Navbar = ({ noodles, selectNoodle }) => {
           />
           woodshed
         </span>
-        { noodles.map(noodle => {
+        { noodles.map((noodle, idx) => {
           return (
-            <div className="px-2" onClick={_ => selectNoodle(noodle)}>
-              <div className="text-white hover:text-gray-400">
+            <div
+              key={`noodle-${idx}`}
+              className="px-2"
+              onClick={_ => selectNoodle(noodle)}
+            >
+              <div className="text-white hover:text-green-300">
                 { noodle.title }
               </div>
             </div>
@@ -28,7 +32,7 @@ const Navbar = ({ noodles, selectNoodle }) => {
         }) }
         <a href="https://github.com/Samboozle/woodshed"
            target="_blank" rel="noopener noreferrer"
-           className="px-2 hover:text-gray-400"
+           className="px-2 hover:text-green-300"
         >
           Repo
         </a>
