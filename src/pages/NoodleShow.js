@@ -23,7 +23,7 @@ const NoodleShow = props => {
           <div className="w-full">
             <JSONPretty
               data={ selectedNoodle }
-              replacer={ (k, v) => k === "description" ? v.slice(0, 60) + "..." : v }
+              replacer={ (k, v) => k === "description" ? v.slice(0, 20) + "..." : v }
               style={{ fontSize: "0.8rem" }}
             />
           </div>
@@ -43,8 +43,6 @@ const NoodleShow = props => {
     }
   }
 
-  const objText = "{ ... }";
-
   return(
     <div id="score-display" className="w-full h-full pt-4 mb-10">
       { selectedNoodle
@@ -52,13 +50,14 @@ const NoodleShow = props => {
             <div className="flex items-center pb-2">
               <Button text="See JSON" callback={_ => setView("json")} />
               <div className={ "px-3 font-semibold text-green-" + (view === "json" ? "600" : "300") }>
-                { objText }
+                { `{ ... }` }
               </div>
               <Button text="See Score" callback={_ => setView("score")} />
               <span className="px-3">
                 <img
                   src={ "icons/music-green" + (view !== "score" ? "-light" : "") + ".png" }
                   className="inline h-20 w-20"
+                  alt=""
                 />
               </span>
             </div>

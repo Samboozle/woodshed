@@ -22,7 +22,7 @@ export default props => {
 
   useEffect(_ => {
     const score = document.getElementById("score");
-    // when state changes, score is destroyed and repainted
+    // when state changes, score is stripped and repainted
     while (score.firstChild) { score.removeChild(score.lastChild); }
     renderScore(props.selectedNoodle, scale);
   }, [props.selectedNoodle, scale]);

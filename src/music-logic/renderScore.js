@@ -2,18 +2,17 @@ import Vex from 'vexflow';
 import _ from 'lodash';
 import theKeys from './theKeys';
 
-const { Barline, Beam, Factory, Registry,
-        StaveModifier, StaveNote, StaveTie, Voice
+const { Barline, Beam, Factory, Registry, // StaveModifier,
       } = Vex.Flow;
 
-const { END } = StaveModifier.Position;
+// const { END } = StaveModifier.Position;
 
 // this function was inspired by this test in the VexFlow project on github:
 // https://github.com/0xfe/vexflow/blob/master/tests/bach_tests.js
 
 export default (noodle, scale) => {
 
-  // registry allows notes to be marked with unique identifiers for later modification
+  // registry allows notes to be marked with unique identifiers for later decoration
   let registry = new Registry();
   Registry.enableDefaultRegistry(registry);
   const retrieve = id => registry.getElementById(id);
@@ -36,6 +35,7 @@ export default (noodle, scale) => {
   let makeNotes = score.notes.bind(score);
   // let makeBeam = score.beam.bind(score); as of now handled with Beam.generateBeams (subject to change)
   // let makeTuplet = score.tuplet.bind(score); as of yet unimplimented
+  // TODO -> implement tuplet support
 
   let makeSystem = (x, y, width) => {
     return vex.System({ x: x, y: y, width: width, spaceBetweenStaves: 9 });
@@ -44,10 +44,9 @@ export default (noodle, scale) => {
   let modifications = {};
   let beams = [];
 
-  measures.forEach((measure, mNo, thisArg) => {
+  measures.forEach((measure, mNo) => {
     let { keySig, timeSig,
       showClef, showKey, showTime,
-      // endClef, endKey, endTime,
       staves, barlines, connectors,
       x, y, width
     } = measure;
@@ -71,32 +70,42 @@ export default (noodle, scale) => {
         voice.forEach((noteObj, nNo) => {
           let { clef, keys, duration, modifiers } = noteObj;
 
-          let strippedKeys = keys.map(strip);
-
-          // TODO -> evaluate options regarding accidental handling.
-          // option 1: give each note an explicit accidental from the outset and forego key signature checking.
-          // option 2: leave key signature checking in, give every note its correct pitch, and future-proof the thing.
-
-          // let strippedKeys = [];
+          let strippedKeys = [];
           
           // this block handles accidentals; accidentals are only shown
           // on the first instance of the note in question PER REGISTER
           // e.g., c#4 -> c#4 will only show one sharp symbol, but
           //       bb4 -> bb3 will show both.
-          // keys.forEach(key => {
-          //   let [pitch, register] = key.split("/");
-          //   console.log(pitch, keySig, accid(pitch))
-          //   if (accid(pitch)) {
-          //     if (accidSoFar.includes(key)) {
-          //       strippedKeys.push([pitch[0], register].join(""));
-          //     } else {
-          //       accidSoFar.push(key)
-          //       strippedKeys.push(strip(key));
-          //     }
-          //   } else {
-          //     strippedKeys.push(strip(key));
-          //   }
-          // });
+          keys.forEach(key => {
+            let [pitch, register] = key.split("/");
+            let accidOverwriteIdx = accidSoFar.findIndex(note => {
+              return note.startsWith(pitch[0]) && note.endsWith(register);
+            });
+
+            let explicitAccid = null;
+            if (modifiers && modifiers["explicitAccid"]) {
+              explicitAccid = modifiers["explicitAccid"];
+            }
+
+            if (accid(pitch)) {
+              if (accidSoFar.includes(key)) {
+                strippedKeys.push([pitch[0], register].join(""));
+              } else if (accidOverwriteIdx !== -1) {
+                accidSoFar.splice(accidOverwriteIdx, 1, key);
+                strippedKeys.push([pitch, register].join(""));
+              } else {
+                accidSoFar.push(key);
+                strippedKeys.push(strip(key));
+              }
+            } else if (accidOverwriteIdx !== -1) {
+                accidSoFar.splice(accidOverwriteIdx, 1, key);
+                strippedKeys.push([pitch, register].join(""));
+            } else if (explicitAccid && explicitAccid.includes(key)) { // for the case where the author wants a non-accidental made explicit,
+              strippedKeys.push([pitch, register].join(""));           // e.g, the previous measure ended with an accidental and the new measure starts with the same pitch and register, but no accidental. (f#/4 | fn/4)
+            } else {
+              strippedKeys.push(strip(key));
+            }
+          });
 
           let note = (strippedKeys.length === 1 ? strippedKeys[0] : `(${strippedKeys.join(" ")})`) + `/${duration}`;
 
@@ -147,7 +156,7 @@ export default (noodle, scale) => {
     let currNote = retrieve(id);
     for (let modKey in modObject) {
       let mod = modObject[modKey];
-      switch(modKey) {
+      switch (modKey) {
         case "artic":
           currNote.addModifier(0, vex.Articulation(mod));
           break;
@@ -169,6 +178,8 @@ export default (noodle, scale) => {
 
   beams.forEach(beamGroup => beamGroup.forEach(beam => { beam.setContext(context).draw() }))
 
+  Registry.disableDefaultRegistry();
+
 }
 
 // simplifyMeasures adds markers to each measure that the Vexflow renderer will use,
@@ -176,8 +187,9 @@ export default (noodle, scale) => {
 // key and time signatures, etc.
 
 const simplifyMeasures = scale => (acc, measure, index, thisArg) => {
-  
-  let { staves, barlines, keySig, timeSig, isPickup } = measure;
+                         // having the scale available will make future 
+                         // media-specific resizing simpler.
+  let { staves } = measure;
   let voices = [];
 
   for (let stave in staves) {

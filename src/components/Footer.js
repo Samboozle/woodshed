@@ -7,7 +7,7 @@ export default _ => {
   >
     <a
       href="https://github.com/Samboozle"
-      className="text-white hover:text-gray-400 font-semibold"
+      className="text-white hover:text-green-300 font-semibold"
       target="_blank"
       rel="noopener noreferrer"
     >

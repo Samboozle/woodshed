@@ -2,7 +2,7 @@ export default {
   id: 1,
   title: "Minuet One (Excerpt)",
   composer: "J. S. Bach",
-  initialTempo: "",
+  description: "",
   measures: [
     { // measure 1
       isPickup: false,
