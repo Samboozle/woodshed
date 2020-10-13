@@ -283,5 +283,114 @@ export default {
         right: "single"
       }
     },
+    { //measure 10
+      isPickup: false,
+      timeSig: "4/4",
+      keySig: "Am",
+      staves: {
+        "treble": [
+          [
+            { clef: "treble", keys: ["dn/5"], duration: "16", modifiers: { "explicitAccid": ["fn/4"] } },
+            { clef: "treble", keys: ["cn/5"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["g#/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["gn/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["g#/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["gn/5"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["g#/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["gn/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["g#/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["fn/5"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["g#/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["gn/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["g#/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["en/5"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["en/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["en/3"], duration: "16", modifiers: null },
+          ]
+        ]
+      },
+      barlines: {
+        left: "none",
+        right: "single"
+      }
+    },
+    { //measure 1
+      isPickup: false,
+      timeSig: "4/4",
+      keySig: "Am",
+      staves: {
+        "treble": [
+          [
+            { clef: "treble", keys: ["an/3"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["en/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["bn/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["cn/5"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["bn/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["an/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["gn/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["en/5"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["dn/5"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["cn/5"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["bn/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["an/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["gn/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["en/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["dn/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["cn/4"], duration: "16", modifiers: null },
+          ]
+        ]
+      },
+      barlines: {
+        left: "none",
+        right: "single"
+      }
+    },
+    { //measure 12
+      isPickup: false,
+      timeSig: "4/4",
+      keySig: "Am",
+      staves: {
+        "treble": [
+          [
+            { clef: "treble", keys: ["g#/3"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["bb/3"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["cn/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["dn/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["en/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["fn/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["gn/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["g#/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["bb/4"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["dn/5"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["cn/5"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["en/5"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["gn/5"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["fn/5"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["g#/5"], duration: "16", modifiers: null },
+            { clef: "treble", keys: ["bb/5"], duration: "16", modifiers: null },
+          ]
+        ]
+      },
+      barlines: {
+        left: "none",
+        right: "single"
+      }
+    },
+    { //measure 13
+      isPickup: false,
+      timeSig: "4/4",
+      keySig: "Am",
+      staves: {
+        "treble": [
+          [
+            { clef: "treble", keys: ["bn/5"], duration: "w", modifiers: { explicitAccid: ["bn/5"] } },
+          ]
+        ]
+      },
+      barlines: {
+        left: "none",
+        right: "end"
+      }
+    },
   ]
 }

@@ -4,6 +4,4 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 This website is meant to serve as a proof-of-concept for a music notation widget I hope to use in a future project.
 
-**woodshed** is a 
-
-Whether this approach will serve my purposes any better than just writing original Vexflow documents remains to be seen.
+Whether this approach will serve my purposes any better than just writing standalone Vexflow documents remains to be seen.
