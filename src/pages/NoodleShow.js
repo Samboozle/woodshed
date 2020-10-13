@@ -4,6 +4,9 @@ import { connect } from 'react-redux';
 import JSONPretty from 'react-json-pretty';
 import { About, Button, Score } from '../components';
 
+import musicGreen from '../assets/music-green.png';
+import musicGreenLight from '../assets/music-green-light.png';
+
 const NoodleShow = props => {
   const { selectedNoodle } = props;
   const [ view, setView ] = useState("json");
@@ -55,7 +58,7 @@ const NoodleShow = props => {
               <Button text="See Score" callback={_ => setView("score")} />
               <span className="px-3">
                 <img
-                  src={ "icons/music-green" + (view !== "score" ? "-light" : "") + ".png" }
+                  src={ view === "score" ? musicGreen : musicGreenLight }
                   className="inline h-20 w-20"
                   alt=""
                 />
